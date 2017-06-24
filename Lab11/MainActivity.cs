@@ -1,6 +1,7 @@
 ﻿using Android.App;
 using Android.Widget;
 using Android.OS;
+using SALLab11;
 
 namespace Lab11
 {
@@ -9,13 +10,15 @@ namespace Lab11
     {
         Complex Data;
         int Counter = 0;
-
+        string Status;
+        string Fullname;
+        string Token;
+        
         protected override void OnCreate(Bundle bundle)
         {
             Android.Util.Log.Debug("Lab11Log", "Activity A - OnCreate");
 
             base.OnCreate(bundle);
-            Validate();
 
             // Set our view from the "main" layout resource
             SetContentView (Resource.Layout.Main);
@@ -31,7 +34,7 @@ namespace Lab11
             if (Data==null)
             {
                 // No ha sido almacenado, agregar el fragmento a la Activity
-                Data = new Complex();
+                Data = new Complex();                
                 var FragmentTransaction = this.FragmentManager.BeginTransaction();
                 FragmentTransaction.Add(Data, "Data");
                 FragmentTransaction.Commit();
@@ -40,7 +43,20 @@ namespace Lab11
             if (bundle!=null)
             {
                 Counter = bundle.GetInt("CounterValue", 0);
+
+                Status = bundle.GetString("StatusValue", Status);
+                Fullname = bundle.GetString("FullnameValue", Fullname);
+                Token = bundle.GetString("TokenValue", Token);
+
+                var ValidateMessage = FindViewById<TextView>(Resource.Id.ValidateMessageTextView);
+                ValidateMessage.SetPadding(40, 20, 0, 0);
+                ValidateMessage.Text = $"{Status}\n{Fullname}\n{Token}";
+
                 Android.Util.Log.Debug("Lab11Log", "Activity A - Recovered Instance State");
+            }
+            else
+            {
+                Validate();
             }
 
             var ClickCounter = FindViewById<Button>(Resource.Id.ClicksCounter);
@@ -64,6 +80,11 @@ namespace Lab11
         protected override void OnSaveInstanceState(Bundle outState)
         {
             outState.PutInt("CounterValue", Counter);
+
+            outState.PutString("StatusValue", Status);
+            outState.PutString("FullnameValue", Fullname);
+            outState.PutString("TokenValue", Token);
+
             Android.Util.Log.Debug("Lab11Log", "Activity A - OnSaveInstanceState");
             base.OnSaveInstanceState(outState);
         }
@@ -110,10 +131,13 @@ namespace Lab11
 
             var ServiceClient = new SALLab11.ServiceClient();
             var Result = await ServiceClient.ValidateAsync("email@email.com", "password", myDevice);
+            Status = Result.Status.ToString();
+            Fullname = Result.Fullname;
+            Token = Result.Token;
 
             var ValidateMessage = FindViewById<TextView>(Resource.Id.ValidateMessageTextView);
             ValidateMessage.SetPadding(40, 20, 0, 0);
-            ValidateMessage.Text = $"{Result.Status}\n{Result.Fullname}\n{Result.Token}";
+            ValidateMessage.Text = $"{Status}\n{Fullname}\n{Token}";
         }
     }
 }
